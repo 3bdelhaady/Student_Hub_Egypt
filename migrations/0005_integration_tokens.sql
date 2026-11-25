@@ -1,0 +1,1 @@
+CREATE TABLE integration_tokens(id text PRIMARY KEY,university_id text NOT NULL REFERENCES universities(id),digest text NOT NULL UNIQUE,expires_at timestamp NOT NULL,revoked_at timestamp,window_started_at timestamp NOT NULL DEFAULT now(),request_count integer NOT NULL DEFAULT 0,created_at timestamp NOT NULL DEFAULT now());

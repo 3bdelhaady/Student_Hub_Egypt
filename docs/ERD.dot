@@ -1,0 +1,70 @@
+digraph ERD {
+  graph [rankdir=LR, bgcolor="#f6f8fa", pad=0.5, nodesep=0.45, ranksep=1.0, fontname="Arial", label="STUDENT HUB EGYPT | Implemented relational model\nFaculty-scoped institutions, agents and learning workspace", labelloc=t, fontsize=24];
+  node [shape=record, style="rounded,filled", fillcolor=white, color="#b9cdd4", fontname="Arial", fontsize=12, margin="0.18,0.12"];
+  edge [color="#5e7d89", fontname="Arial", fontsize=10, arrowsize=0.7];
+  subgraph cluster_identity { label="IDENTITY"; color="#bfdadf"; style=rounded;
+    user [label="user|PK id : text|name : text|UNIQUE email : text|email_verified : boolean|created_at / updated_at"];
+    session [label="session|PK id|FK user_id|UNIQUE token|expires_at|ip_address / user_agent"];
+    account [label="account|PK id|FK user_id|provider_id / account_id|password hash / provider tokens"];
+    verification [label="verification|PK id|identifier / value|expires_at"];
+    rate_limit [label="rate_limit|PK id|UNIQUE key|count / last_request"];
+  }
+  subgraph cluster_catalog { label="CATALOG"; color="#82c8bb"; style=rounded;
+    universities [label="universities|PK id|name / city"];
+    faculties [label="faculties|PK id|FK university_id|name / active|UNIQUE university_id + name|UNIQUE id + university_id"];
+  }
+  subgraph cluster_membership { label="MEMBERSHIP"; color="#b7b6da"; style=rounded;
+    memberships [label="memberships|PK id|UNIQUE FK user_id|FK university_id|FK faculty_id (legacy nullable)|faculty : request-time label|role / status / created_at|Composite FK faculty + university"];
+  }
+  subgraph cluster_content { label="CONTENT"; color="#96bdcf"; style=rounded;
+    courses [label="courses|PK id|FK university_id|title / description|category / instructor|published / created_at"];
+    resources [label="resources|PK id|FK course_id|title / kind / body|position / created_at"];
+    posts [label="posts|PK id|FK university_id|title / excerpt / body|kind / category|published / created_at"];
+  }
+  subgraph cluster_learning { label="LEARNING"; color="#a2cfad"; style=rounded;
+    saved_courses [label="saved_courses|PK id|FK user_id / course_id|created_at|UNIQUE user_id + course_id"];
+    resource_progress [label="resource_progress|PK id|FK user_id / resource_id|completed_at|UNIQUE user_id + resource_id"];
+  }
+  subgraph cluster_platform { label="AUDIT & INTEGRATION"; color="#d3c49b"; style=rounded;
+    audit_events [label="audit_events|PK id|FK actor_id (nullable system actor)|FK university_id|action / entity_id / created_at"];
+    integration_tokens [label="integration_tokens|PK id|FK university_id|UNIQUE digest (hash only)|expires_at / revoked_at|request_count / window_started_at"];
+  }
+  user -> session [label="1 : many"];
+  user -> account [label="1 : many"];
+  user -> memberships [label="1 : zero-or-one"];
+  universities -> faculties [label="1 : many"];
+  universities -> memberships [label="1 : many"];
+  faculties -> memberships [label="1 : many; same university"];
+  universities -> courses [label="1 : many"];
+  universities -> posts [label="1 : many"];
+  courses -> resources [label="1 : many; cascade"];
+  user -> saved_courses [label="1 : many; cascade"];
+  courses -> saved_courses [label="1 : many; cascade"];
+  user -> resource_progress [label="1 : many; cascade"];
+  resources -> resource_progress [label="1 : many; cascade"];
+  user -> audit_events [label="1 : many; optional actor"];
+  universities -> audit_events [label="1 : many"];
+  universities -> integration_tokens [label="1 : many"];
+
+  subgraph cluster_institutions { label="INSTITUTIONS & DEPARTMENT ACCESS"; color="#6fb4aa"; style=rounded;
+    platform_admins [label="platform_admins|PK/FK user_id|created_at"];
+    institutions [label="institutions|PK id|FK university_id (academic only)|kind: university / private_sector|name / description / website|active / demo"];
+    student_organizations [label="student_organizations|PK id|FK institution / university / faculty|kind: union / activity|name / active|Composite scope + kind unique"];
+    institution_agents [label="institution_agents|PK id|UNIQUE FK user_id|FK institution / university / faculty|FK organization (optional)|department / position / status|is_super_agent|can_read / can_edit / can_publish|Composite scope constraints"];
+    institution_content [label="institution_content|PK id|FK institution / university / faculty|FK organization (optional)|department / title / body|published / FK author_id"];
+    institution_audit_events [label="institution_audit_events|PK id|FK actor_id (nullable system)|FK institution_id|action / entity_id / created_at"];
+    demo_provision_runs [label="demo_provision_runs|PK id (one-time atomic claim)|created_at"];
+  }
+  user -> platform_admins [label="zero-or-one"];
+  user -> institution_agents [label="zero-or-one"];
+  universities -> institutions [label="academic institutions only"];
+  institutions -> student_organizations;
+  faculties -> student_organizations [label="same university"];
+  institutions -> institution_agents;
+  faculties -> institution_agents [label="academic scope"];
+  student_organizations -> institution_agents [label="same kind + faculty"];
+  institutions -> institution_content;
+  student_organizations -> institution_content [label="same kind + faculty"];
+  user -> institution_content [label="author"];
+  institutions -> institution_audit_events;
+}

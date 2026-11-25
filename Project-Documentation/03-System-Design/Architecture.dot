@@ -1,0 +1,14 @@
+digraph Hub {
+ graph [rankdir=TB,bgcolor="#f6f9fa",pad="0.4",nodesep="0.4",ranksep="0.55",fontname="Arial",label="STUDENT HUB EGYPT | AS-BUILT ARCHITECTURE\nDevelopment deployment, 25 November 2026",labelloc=t,fontsize=19];
+ node [shape=box,style="rounded,filled",fontname="Arial",fontsize=12,margin="0.2,0.14",color="#6b9eaa",fillcolor="white"];
+ edge [color="#426c76",fontname="Arial",fontsize=10];
+ browser [label="Browser\nArabic RTL student / agent / admin UI",fillcolor="#ddf3ed"];
+ next [label="Next.js App Router on Vercel\nServer pages + client forms"];
+ auth [label="Better Auth\nCredentials / sessions / throttling"];
+ domain [label="Domain actions, queries, route handlers\nSession + scope + validation + transactions"];
+ db [shape=cylinder,label="Network PostgreSQL via Drizzle\nApplication + auth + audit + DB media"];
+ logs [label="Redacted diagnostics\nNo external alerts configured",fillcolor="#fff1d7"];
+ email [label="Email adapter: implemented, DISABLED\nProvider/domain delivery not verified",style="rounded,dashed,filled",fillcolor="#fff1d7"];
+ fitness [label="Separate Fitness Club app\nBridge requires configured round-trip test",style="rounded,dashed,filled"];
+ browser -> next;next -> domain;next -> auth;auth -> db;domain -> db;domain -> logs;auth -> email [style=dashed,label="not enabled"];next -> fitness [style=dashed,label="consent + signed one-use grant"];
+}

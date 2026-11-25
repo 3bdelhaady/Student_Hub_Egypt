@@ -1,0 +1,45 @@
+name: Verify phase-one MVP
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    env:
+      DEMO_MODE: 'true'
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Generate isolated ephemeral test secret
+        run: |
+          node <<'NODE'
+          const secret = require("crypto").randomBytes(48).toString("hex");
+          console.log("::add-mask::" + secret);
+          require("fs").appendFileSync(process.env.GITHUB_ENV, "BETTER_AUTH_SECRET=" + secret + "\n");
+          NODE
+      - run: npm run db:migrate && npm run db:seed
+      - run: npm run test:fixtures
+      - run: npm run format:check
+      - run: npm run typecheck && npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
+        timeout-minutes: 24
+      - run: npm audit --audit-level=high
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-report-${{ matrix.shard }}
+          path: playwright-report/
+          retention-days: 7

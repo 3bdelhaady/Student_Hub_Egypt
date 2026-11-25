@@ -1,0 +1,58 @@
+{
+  "name": "student-hub-egypt",
+  "version": "0.3.0",
+  "description": "Arabic-first university community platform",
+  "scripts": {
+    "test": "tsx --test tests/*.test.ts",
+    "dev": "next dev --webpack --hostname 0.0.0.0",
+    "build": "next build --webpack",
+    "start": "next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "test:e2e": "playwright test",
+    "admin:grant": "tsx scripts/grant-admin.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:fixtures": "tsx scripts/test-fixtures.ts",
+    "integration:create": "tsx scripts/create-integration.ts",
+    "integration:revoke": "tsx scripts/revoke-integration.ts",
+    "demo:provision": "tsx scripts/provision-demo.ts",
+    "demo:status": "tsx scripts/demo-status.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.17",
+    "better-auth": "1.7.27",
+    "csv-parse": "7.0.3",
+    "drizzle-orm": "0.45.4",
+    "lucide-react": "1.77.0",
+    "next": "16.4.6",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.1",
+    "@types/node": "26.6.6",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "prettier": "3.10.1",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.12"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+UPDATE memberships AS m SET university_id=f.university_id,faculty_id=f.id,faculty=f.name FROM faculties AS f JOIN universities AS un ON un.id=f.university_id WHERE m.role='student' AND un.id='demo-university' AND un.name='جامعة قنا الأهلية' AND f.id='demo-computing' AND f.name='كلية الحاسبات والذكاء الاصطناعي' AND f.active=true;

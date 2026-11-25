@@ -1,0 +1,17 @@
+CREATE TABLE "user" (id text PRIMARY KEY,name text NOT NULL,email text NOT NULL UNIQUE,email_verified boolean NOT NULL DEFAULT false,image text,created_at timestamp NOT NULL DEFAULT now(),updated_at timestamp NOT NULL DEFAULT now());
+CREATE TABLE session (id text PRIMARY KEY,expires_at timestamp NOT NULL,token text NOT NULL UNIQUE,created_at timestamp NOT NULL,updated_at timestamp NOT NULL,ip_address text,user_agent text,user_id text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE);
+CREATE TABLE account (id text PRIMARY KEY,account_id text NOT NULL,provider_id text NOT NULL,user_id text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,access_token text,refresh_token text,id_token text,access_token_expires_at timestamp,refresh_token_expires_at timestamp,scope text,password text,created_at timestamp NOT NULL,updated_at timestamp NOT NULL);
+CREATE TABLE verification (id text PRIMARY KEY,identifier text NOT NULL,value text NOT NULL,expires_at timestamp NOT NULL,created_at timestamp NOT NULL,updated_at timestamp NOT NULL);
+CREATE INDEX session_user_idx ON session(user_id);
+CREATE INDEX account_user_idx ON account(user_id);
+CREATE TABLE universities(id text PRIMARY KEY,name text NOT NULL,city text NOT NULL);
+CREATE TABLE memberships(id text PRIMARY KEY,user_id text NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,university_id text NOT NULL REFERENCES universities(id),role text NOT NULL DEFAULT 'student' CHECK(role IN ('student','editor','admin')),status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','active','rejected','suspended')),faculty text NOT NULL DEFAULT '',created_at timestamp NOT NULL DEFAULT now());
+CREATE UNIQUE INDEX membership_user_university ON memberships(user_id,university_id);
+CREATE TABLE courses(id text PRIMARY KEY,university_id text NOT NULL REFERENCES universities(id),title text NOT NULL,description text NOT NULL,category text NOT NULL,instructor text NOT NULL,published boolean NOT NULL DEFAULT false,created_at timestamp NOT NULL DEFAULT now());
+CREATE TABLE resources(id text PRIMARY KEY,course_id text NOT NULL REFERENCES courses(id) ON DELETE CASCADE,title text NOT NULL,kind text NOT NULL CHECK(kind IN ('lecture','file')),body text NOT NULL,position integer NOT NULL DEFAULT 0,created_at timestamp NOT NULL DEFAULT now());
+CREATE TABLE posts(id text PRIMARY KEY,university_id text NOT NULL REFERENCES universities(id),title text NOT NULL,excerpt text NOT NULL,body text NOT NULL,kind text NOT NULL CHECK(kind IN ('news','opportunity')),category text NOT NULL,published boolean NOT NULL DEFAULT false,created_at timestamp NOT NULL DEFAULT now());
+CREATE TABLE audit_events(id text PRIMARY KEY,actor_id text NOT NULL REFERENCES "user"(id),university_id text NOT NULL REFERENCES universities(id),action text NOT NULL,entity_id text NOT NULL,created_at timestamp NOT NULL DEFAULT now());
+CREATE INDEX courses_scope ON courses(university_id,published);
+CREATE INDEX posts_scope ON posts(university_id,published);
+CREATE INDEX resources_course ON resources(course_id,position);
+CREATE INDEX audit_scope ON audit_events(university_id,created_at);
